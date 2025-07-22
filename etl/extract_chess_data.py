@@ -54,5 +54,5 @@ def extract_chess_player_data(username:str, number_month:int=3):
     print(f"=>Extraction done. {total_games_downloaded} games for {username}")
 
 if __name__ == "__main__":
-    test_username = "ynnebyal"
+    test_username = input("Which username do you want to extract data of? ")
     extract_chess_player_data(test_username)
