@@ -48,8 +48,14 @@ def transformed_single_game(game:dict, username:str):
 
 def transformed_games(username: str, raw_dir: str=JSON_DATA_DIR):
     all_games=[]
+    raw_dir = os.path.join(JSON_DATA_DIR, username)
+    if not os.path.exists(raw_dir):
+        print(f"User raw data directory not found: '{raw_dir}'.")
+        return pd.DataFrame()
     for file in os.listdir(raw_dir):
         filepath=os.path.join(raw_dir, file)
+        if not os.path.isfile(filepath) or not file.endswith(".json"): #we only look at .json file and not .git file for example
+            continue
         try:
             with open(filepath, 'r', encoding="utf-8") as f:
                 games=json.load(f)
@@ -68,7 +74,9 @@ def transformed_games(username: str, raw_dir: str=JSON_DATA_DIR):
         df['time_class'] = df['time_class'].astype('category')
         df['rated'] = df['rated'].astype(bool)
 
-        output_filename = os.path.join(TRANSFORMED_DATA_DIR, f"{username}_transformed_games.csv")
+        user_transformed_output_dir = os.path.join(TRANSFORMED_DATA_DIR, username)
+        os.makedirs(user_transformed_output_dir, exist_ok=True)
+        output_filename = os.path.join(user_transformed_output_dir, f"{username}_transformed_games.csv")
         df.to_csv(output_filename, index=False, encoding='utf-8')
         print(f"Data saved: {output_filename}")
         return df
