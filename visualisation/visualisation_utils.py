@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
 DATA_DIR = '../data/transformed'
 @st.cache_data 
 def load_data(username_input: str) -> pd.DataFrame:
@@ -23,3 +25,26 @@ def load_data(username_input: str) -> pd.DataFrame:
     
     st.warning("No data loaded.")
     return pd.DataFrame()
+
+def show_key_metrics(df: pd.DataFrame):
+    st.header("Head of the dataframe")
+    st.metric(label="Number of games", value=len(df))
+    st.dataframe(df.head())
+    st.write("Average rating of opponents")
+    column11, column12, column13 = st.columns(3)
+    avg_rating_all_time_class=round(df.groupby(['time_class'])['player_rating'].mean())
+    with column11:
+        st.metric(label="Blitz", value=avg_rating_all_time_class['blitz'])
+    with column12:
+        st.metric(label="Bullet", value=avg_rating_all_time_class['bullet'])
+    with column13:
+        st.metric(label="Rapid", value=avg_rating_all_time_class['rapid'])
+    st.dataframe(avg_rating_all_time_class)
+    
+    st.subheader('Games results')
+    fig, ax=plt.subplots(figsize=(3,3))
+    sns.countplot(x="player_result", data=df, order=df['player_result'].value_counts().index, ax=ax)
+    ax.set_title('Results distribution')
+    ax.set_xlabel("Results")
+    ax.set_ylabel("Games count")
+    st.pyplot(fig)
