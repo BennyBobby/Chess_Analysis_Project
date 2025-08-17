@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import os
+import re
 JSON_DATA_DIR="data/json"
 TRANSFORMED_DATA_DIR="data/transformed"
 
@@ -8,6 +9,9 @@ def transformed_single_game(game:dict, username:str):
     transformed_data= {}
     transformed_data['game_url']= game.get('url')
     transformed_data['game_id']= game['url'].split('/')[-1] 
+    date_pattern = r'\[Date \"(.*?)\"\]'
+    date_match = re.search(date_pattern, game.get('pgn', ''))
+    transformed_data['date'] = date_match.group(1) if date_match else None
     transformed_data['rated']= game.get('rated')
     transformed_data['time_class']= game.get('time_class')
     opening=game.get('eco')
@@ -73,6 +77,7 @@ def transformed_games(username: str, raw_dir: str=JSON_DATA_DIR):
         df['player_result'] = df['player_result'].astype('category')
         df['time_class'] = df['time_class'].astype('category')
         df['rated'] = df['rated'].astype(bool)
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
 
         user_transformed_output_dir = os.path.join(TRANSFORMED_DATA_DIR, username)
         os.makedirs(user_transformed_output_dir, exist_ok=True)
