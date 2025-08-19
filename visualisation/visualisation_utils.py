@@ -28,7 +28,9 @@ def load_data(username_input: str) -> pd.DataFrame:
 
 def show_key_metrics(df: pd.DataFrame):
     st.dataframe(df.head())
+    #show number of total games player by the player
     st.metric(label="Number of games", value=len(df))
+    #show average rating of opponents following time class
     st.write("Average rating of opponents")
     column11, column12, column13 = st.columns(3)
     avg_rating_all_time_class=round(df.groupby(['time_class'])['opponent_rating'].mean())
@@ -38,7 +40,7 @@ def show_key_metrics(df: pd.DataFrame):
         st.metric(label="Bullet", value=avg_rating_all_time_class['bullet'])
     with column13:
         st.metric(label="Rapid", value=avg_rating_all_time_class['rapid'])
-    
+    #show distribution of win, lose and draw following time class
     st.subheader('Game results')
     tab11, tab12, tab13 = st.tabs(["Blitz", "Bullet", "Rapid"])
     df_blitz = df[df['time_class'] == 'blitz']
@@ -49,7 +51,7 @@ def show_key_metrics(df: pd.DataFrame):
             st.warning("No Blitz Data")
             return
         fig, ax = plt.subplots(figsize=(12, 6))
-        sns.countplot(x="player_result", data=df_blitz, order=df_blitz['player_result'].value_counts().index, palette='Set2', ax=ax)
+        sns.countplot(x="player_result", data=df_blitz, palette='Set2', ax=ax)
         ax.set_title('Distribution of Blitz Results')
         ax.set_xlabel("Results")
         ax.set_ylabel("Number of games")
@@ -60,7 +62,7 @@ def show_key_metrics(df: pd.DataFrame):
             st.warning("No Bullet Data")
             return
         fig, ax = plt.subplots(figsize=(12, 6))
-        sns.countplot(x="player_result", data=df_bullet, order=df_bullet['player_result'].value_counts().index, palette='Set2', ax=ax)
+        sns.countplot(x="player_result", data=df_bullet, palette='Set2', ax=ax)
         ax.set_title('Distribution of Bullet Results')
         ax.set_xlabel("Results")
         ax.set_ylabel("Number of games")
@@ -71,13 +73,13 @@ def show_key_metrics(df: pd.DataFrame):
             st.warning("No Rapid Data")
             return
         fig, ax = plt.subplots(figsize=(12, 6))
-        sns.countplot(x="player_result", data=df_rapid, order=df_rapid['player_result'].value_counts().index, palette='Set2', ax=ax)
+        sns.countplot(x="player_result", data=df_rapid, palette='Set2', ax=ax)
         ax.set_title('Distribution of Rapid Results')
         ax.set_xlabel("Results")
         ax.set_ylabel("Number of games")
         ax.grid(axis='y', linestyle='--', alpha=0.7)
         st.pyplot(fig)
-
+    #show ratings evolution of the player
     st.subheader('Ratings Evolution')
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     df_blitz_monthly = df.loc[df['time_class'] == 'blitz', ['date', 'player_rating']].copy()
@@ -94,7 +96,7 @@ def show_key_metrics(df: pd.DataFrame):
     df_rapid_monthly['month'] = df_rapid_monthly['date'].dt.to_period('M')
     df_rapid_monthly = df_rapid_monthly.groupby('month')['player_rating'].mean().reset_index()
     df_rapid_monthly['month'] = df_rapid_monthly['month'].astype(str)
-
+    
     col21, col22, col23 = st.columns(3)
     with col21:
         blitz_button = st.button('Blitz')
@@ -145,3 +147,14 @@ def show_key_metrics(df: pd.DataFrame):
             st.warning("No Rapid Data")
     else:
         st.info("Select time class rating")
+    
+    #show opening ranking by frequency
+    st.subheader("Most frequent played openings")
+    total_different_openings_played=len(df['opening'].unique())
+    number_frequent_openings=st.slider("How many opening do you want to show", 1, total_different_openings_played if total_different_openings_played<20 else 20 , 3, 1)
+    frequent_openings=df['opening'].value_counts().head(number_frequent_openings)
+    fig, ax = plt.subplots()
+    sns.barplot(x=frequent_openings.values, y=frequent_openings.index, ax=ax)
+    ax.set_title('Most frequent openings played')
+    ax.set_xlabel('occurrence')
+    st.pyplot(fig)
