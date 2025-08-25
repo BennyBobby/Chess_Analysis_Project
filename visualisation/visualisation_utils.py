@@ -15,7 +15,7 @@ def load_data(username_input: str) -> pd.DataFrame:
             df['player_result'] = df['player_result'].astype('category')
             df['time_class'] = df['time_class'].astype('category')
             df['rated'] = df['rated'].astype(bool)
-            
+            df['date'] = pd.to_datetime(df['date'], errors='coerce')
             st.success(f"Loaded Data from '{username_input}' ({len(df)} game(s).")
             return df
         except Exception as e:
@@ -107,11 +107,11 @@ def show_key_metrics(df: pd.DataFrame):
     
     col21, col22, col23 = st.columns(3)
     with col21:
-        blitz_button = st.button('Blitz')
+        blitz_button = st.button('Blitz', key='blitz_rating_button')
     with col22:
-        bullet_button = st.button('Bullet')
+        bullet_button = st.button('Bullet', key='bullet_rating_button')
     with col23:
-        rapid_button = st.button('Rapid')
+        rapid_button = st.button('Rapid', key='rapid_rating_button')
     if blitz_button:
         st.markdown("Blitz Rating")
         if not df_blitz_monthly.empty:
