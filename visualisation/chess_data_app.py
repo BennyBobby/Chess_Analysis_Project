@@ -13,6 +13,7 @@ if username:
     dataframe_games = load_data(username_input=username)
     if dataframe_games.empty:
         st.warning(f"Dataframe empty for {username}")
+
     else:
         first_game_date = dataframe_games["date"].min().to_pydatetime()
         last_game_date = dataframe_games["date"].max().to_pydatetime()
@@ -32,7 +33,7 @@ if username:
         if dataframe_games_filtered.empty:
             st.warning("No data found within the selected date range.")
             st.stop()
-        st.dataframe(dataframe_games_filtered.head())
+        # st.dataframe(dataframe_games_filtered.head())
         # show the number of games done by the user
         st.subheader("Number of games")
         show_number_games(dataframe_games_filtered)

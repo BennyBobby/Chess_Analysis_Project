@@ -2,6 +2,7 @@ import requests
 import json
 import time
 import os
+import shutil
 
 USER_AGENT = "Mozilla/5.0 (compatible; Chess_Analyse/1.0; +https://chess.com)"
 
@@ -22,7 +23,7 @@ def make_request(url: str):
         response = requests.get(url, headers={"User-Agent": USER_AGENT})
         return response.json()
     except requests.exceptions.RequestException as err:
-        print(f"Error request with {url} which is {err}")
+        print(f"Extraction: Error request with {url} which is {err}")
         return None
 
 
@@ -45,7 +46,7 @@ def get_chess_data(username: str):
     return []
 
 
-def save_games_to_json(username: str, month: int, year: int, games_data: list):
+def save_games_to_json(games_data: list, filepath: str):
     """
     It saves list of games to JSON file. This function creates the user
     directory in data/json and saves provided games list into JSON file.
@@ -60,14 +61,11 @@ def save_games_to_json(username: str, month: int, year: int, games_data: list):
         IOError: If an error occurs during file saving.
 
     """
-    user_json_dir = os.path.join("data/json", username)
-    os.makedirs(user_json_dir, exist_ok=True)  # we create the user folder in data/json
-    filename = os.path.join(user_json_dir, f"{username}_{year}_{month}.json")
     try:
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(games_data, f, ensure_ascii=False, indent=4)
     except IOError as err:
-        print(f"Error {err} during saving file: {filename}")
+        print(f"Error {err} during saving file: {filepath}")
 
 
 def download_monthly_games(archive_url: str):
@@ -100,24 +98,38 @@ def extract_chess_player_data(username: str):
         username (str): The chess.com username of the player
     """
     print(f"=>Start of the extraction data of {username}")
+    user_json_dir = os.path.join("data/json", username)
+    os.makedirs(user_json_dir, exist_ok=True)  # we create the user folder in data/json
+    downloaded_files = set(os.listdir(user_json_dir))
     archives = get_chess_data(username)
     if not archives:
         print(f"No data found with {username}, play chess then")
+        try:
+            shutil.rmtree(user_json_dir)  # This will delete the folder
+            print(f"The folder '{user_json_dir}' has been successfully deleted.")
+        except FileNotFoundError:
+            print(f"The folder '{user_json_dir}' does not exist.")
+        except OSError as e:
+            print(f"Error: {e.strerror}")
         return 0
     total_games_downloaded = 0
-
     for i, archive_url in enumerate(archives):
         parts = archive_url.split("/")
         year = int(parts[-2])
         month = int(parts[-1])
+        filename = f"{username}_{year}_{month}.json"
+        filepath = os.path.join(user_json_dir, filename)
+        if filename in downloaded_files:
+            print(f"{filename} already exists.")
+            continue  # We skip to the next archive
         games = download_monthly_games(archive_url)
         if games:
-            save_games_to_json(username, year, month, games)
+            save_games_to_json(games, filepath)
             total_games_downloaded += len(games)
         time.sleep(1)
     print(f"=>Extraction done. {total_games_downloaded} games for {username}")
 
 
 if __name__ == "__main__":
-    test_username = input("Which username do you want to extract data of? ")
-    extract_chess_player_data(test_username)
+    username_input = input("Which username do you want to extract data of? ")
+    extract_chess_player_data(username_input)

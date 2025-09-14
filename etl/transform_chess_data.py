@@ -115,7 +115,7 @@ def transformed_games(username: str, raw_dir: str = JSON_DATA_DIR):
                     if transformed_game:
                         all_games.append(transformed_game)
         except Exception as e:
-            print(f"Error {e} from {filepath}")
+            print(f"Transform step: Error {e} from {filepath}")
     if all_games:
         df = pd.DataFrame(all_games)
         df["opening"] = df["opening"].fillna("N/A")

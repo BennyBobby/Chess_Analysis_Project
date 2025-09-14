@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 DATA_DIR = "../data/transformed"
 
 
@@ -42,7 +43,7 @@ def load_data(username_input: str) -> pd.DataFrame:
             df["time_class"] = df["time_class"].astype("category")
             df["rated"] = df["rated"].astype(bool)
             df["date"] = pd.to_datetime(df["date"], errors="coerce")
-            st.success(f"Loaded Data from '{username_input}' ({len(df)} game(s).")
+            st.success(f"Loaded Data from {username_input}: {len(df)} game(s).")
             return df
         except Exception as e:
             st.error(f"Error: {e}")
